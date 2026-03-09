@@ -76,9 +76,6 @@ export default function Auth() {
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: supabaseProvider,
-        options: {
-          redirectTo: window.location.origin + createPageUrl('Auth'),
-        },
       });
 
       if (error) {

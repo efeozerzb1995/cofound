@@ -36,8 +36,9 @@ export default function ExperienceTimeline() {
   useEffect(() => {
     const loadExperiences = async () => {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        const user = sessionData?.session?.user;
         if (!user) return;
 
         const { data, error } = await supabase

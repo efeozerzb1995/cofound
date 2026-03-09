@@ -88,8 +88,9 @@ export default function Settings() {
   useEffect(() => {
     const loadProfileFromSupabase = async () => {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        const user = sessionData?.session?.user;
         if (!user) {
           setIsLoadingProfile(false);
           return;
@@ -240,7 +241,12 @@ export default function Settings() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Profil sayfasında oturum kapatma hatası:', error);
+    }
     localStorage.clear();
     toast.success('Çıkış yapıldı');
     navigate(createPageUrl('Auth'));

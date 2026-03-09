@@ -179,13 +179,24 @@ export default function Messages() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Mesajlar için oturum alınırken hata:', sessionError);
+          setLoadingConversations(false);
+          return;
+        }
+        const user = sessionData?.session?.user;
+        if (!user) {
+          setLoadingConversations(false);
+          return;
+        }
+        setCurrentUserId(user.id);
+        await loadConversations(user.id);
+      } catch (err) {
+        console.error('Mesajlar için kullanıcı yüklenemedi:', err);
         setLoadingConversations(false);
-        return;
       }
-      setCurrentUserId(user.id);
-      await loadConversations(user.id);
     })();
   }, [loadConversations]);
 
