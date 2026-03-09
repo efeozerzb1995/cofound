@@ -44,6 +44,7 @@ const navigation = [
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [sessionUser, setSessionUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     {
@@ -91,6 +92,20 @@ export default function Layout({ children }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Session for navbar: show bell/profile only when authenticated
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSessionUser(data?.session?.user ?? null);
+    };
+    init();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSessionUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const isAuthPage = location.pathname === createPageUrl('Auth');
   const isActive = (page) => {
     return location.pathname === createPageUrl(page);
   };
@@ -149,8 +164,8 @@ export default function Layout({ children }) {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to={createPageUrl('Explore')} className="flex items-center">
+            {/* Logo - on Auth page link to Home, otherwise Explore */}
+            <Link to={isAuthPage ? createPageUrl('Home') : createPageUrl('Explore')} className="flex items-center">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6994236ab1322fa19a6339c3/e52cd1bd1_CoFoundlogowithglowingbluetones.png"
                 alt="CoFound"
@@ -158,34 +173,38 @@ export default function Layout({ children }) {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
-              {navigation.map((item) => (
+            {/* Desktop Navigation - hidden on Auth page */}
+            {!isAuthPage && (
+              <div className="hidden md:flex items-center gap-1">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={createPageUrl(item.href)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      isActive(item.href)
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.name}
+                  </Link>
+                ))}
                 <Link
-                  key={item.name}
-                  to={createPageUrl(item.href)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                    isActive(item.href)
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
+                  to={createPageUrl('CreateProject')}
+                  className="ml-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white"
                 >
-                  <item.icon className="w-4 h-4" />
-                  {item.name}
+                  <Zap className="w-4 h-4" />
+                  Proje Ekle
                 </Link>
-              ))}
-              <Link
-                to={createPageUrl('CreateProject')}
-                className="ml-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white"
-              >
-                <Zap className="w-4 h-4" />
-                Proje Ekle
-              </Link>
-            </div>
+              </div>
+            )}
 
-            {/* Right Side */}
-            <div className="flex items-center gap-3">
-              {/* Notifications - Desktop */}
+            {/* Right Side - nothing on Auth page; when authenticated show bell + profile */}
+            {!isAuthPage && (
+              <div className="flex items-center gap-3">
+              {/* Notifications - Desktop - only when authenticated */}
+              {sessionUser && (
               <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -259,8 +278,10 @@ export default function Layout({ children }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+              )}
 
-              {/* Profile Dropdown - Desktop */}
+              {/* Profile Dropdown - Desktop - only when authenticated */}
+              {sessionUser && (
               <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -314,8 +335,9 @@ export default function Layout({ children }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+              )}
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Button - hidden on Auth page */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild className="md:hidden">
                   <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
@@ -324,7 +346,8 @@ export default function Layout({ children }) {
                 </SheetTrigger>
                 <SheetContent side="right" className="bg-slate-900 border-slate-800 w-72">
                   <div className="flex flex-col h-full">
-                    {/* Mobile Profile */}
+                    {/* Mobile Profile - only when authenticated */}
+                    {sessionUser && (
                     <div className="flex items-center gap-3 pb-6 border-b border-slate-800">
                       <Avatar className="h-12 w-12 border border-slate-700">
                         <AvatarImage src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" />
@@ -340,6 +363,7 @@ export default function Layout({ children }) {
                         <p className="text-xs text-slate-400">Profilini Ayarlar bölümünden güncelle</p>
                       </div>
                     </div>
+                    )}
 
                     {/* Mobile Navigation */}
                     <div className="flex-1 py-6 space-y-1">
@@ -368,24 +392,36 @@ export default function Layout({ children }) {
                       </Link>
                     </div>
 
-                    {/* Mobile Footer */}
+                    {/* Mobile Footer - logout when authenticated; sign-in link when not */}
                     <div className="pt-6 border-t border-slate-800">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start text-red-400 hover:text-red-400 hover:bg-red-500/10"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          handleLogout();
-                        }}
-                      >
-                        <LogOut className="w-5 h-5 mr-3" />
-                        Çıkış Yap
-                      </Button>
+                      {sessionUser ? (
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-red-400 hover:text-red-400 hover:bg-red-500/10"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            handleLogout();
+                          }}
+                        >
+                          <LogOut className="w-5 h-5 mr-3" />
+                          Çıkış Yap
+                        </Button>
+                      ) : (
+                        <Link
+                          to={createPageUrl('Auth')}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 w-full"
+                        >
+                          <Zap className="w-5 h-5" />
+                          Giriş Yap
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </SheetContent>
               </Sheet>
             </div>
+            )}
           </div>
         </div>
       </nav>
