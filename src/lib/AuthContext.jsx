@@ -13,12 +13,28 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      await checkAppState();
+      try {
+        // On first load (including after OAuth redirect), hydrate from existing session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Initial session fetch failed:', sessionError);
+        } else {
+          const currentUser = sessionData?.session?.user ?? null;
+          setUser(currentUser);
+          setIsAuthenticated(!!currentUser);
+        }
+      } catch (error) {
+        console.error('Unexpected error while initializing auth session:', error);
+      } finally {
+        // Continue with the existing app state checks
+        await checkAppState();
+      }
     };
 
     initAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
@@ -54,13 +70,13 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const { data, error } = await supabase.auth.getUser();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-      if (error) {
-        throw error;
+      if (sessionError) {
+        throw sessionError;
       }
 
-      const currentUser = data?.user ?? null;
+      const currentUser = sessionData?.session?.user ?? null;
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
       // No hard error when not authenticated; routes can handle public vs private access
