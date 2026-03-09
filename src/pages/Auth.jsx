@@ -22,6 +22,7 @@ export default function Auth() {
 
   useEffect(() => {
     const applySessionDecision = async (user) => {
+      console.log('[Auth] applySessionDecision called', { hasUser: !!user, userId: user?.id });
       if (!user) return;
       try {
         const { data: profile, error: profileError } = await supabase
@@ -30,14 +31,18 @@ export default function Auth() {
           .eq('user_id', user.id)
           .maybeSingle();
 
+        console.log('[Auth] profiles query result', { userId: user.id, profile, profileError: profileError?.message ?? null });
+
         if (profileError) {
           console.error('Profil sorgulanırken hata:', profileError);
           return;
         }
 
         if (!profile) {
+          console.log('[Auth] No profile found → setting showOnboarding to true');
           setShowOnboarding(true);
         } else {
+          console.log('[Auth] Profile exists → navigating to Explore');
           navigate(createPageUrl('Explore'));
         }
       } catch (error) {
@@ -47,6 +52,7 @@ export default function Auth() {
 
     const runCheck = async () => {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('[Auth] runCheck (initial getSession)', { hasSession: !!sessionData?.session, userId: sessionData?.session?.user?.id, sessionError: sessionError?.message ?? null });
       if (sessionError) {
         console.error('Oturum alınırken hata:', sessionError);
         return;
@@ -58,6 +64,7 @@ export default function Auth() {
     runCheck();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] onAuthStateChange', { event, hasSession: !!session, userId: session?.user?.id });
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         const user = session?.user ?? null;
         applySessionDecision(user);
