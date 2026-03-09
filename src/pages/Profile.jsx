@@ -34,10 +34,7 @@ import { supabase } from '@/lib/supabase';
 export default function Profile() {
   const navigate = useNavigate();
   const isOwner = true; // This is the logged-in user's own profile
-  const [profileData, setProfileData] = useState(() => {
-    const saved = localStorage.getItem('userProfile');
-    return saved ? JSON.parse(saved) : users[0];
-  });
+  const [profileData, setProfileData] = useState(users[0]);
   const [lookingFor, setLookingFor] = useState('');
   const [editingLookingFor, setEditingLookingFor] = useState(false);
   const [lookingForDraft, setLookingForDraft] = useState('');

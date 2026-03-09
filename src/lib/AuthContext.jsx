@@ -14,6 +14,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Clear legacy localStorage auth/user data from older implementations
+        try {
+          localStorage.removeItem('user_session');
+          localStorage.removeItem('ekipbul_onboarding_complete');
+          localStorage.removeItem('ekipbul_user_authenticated');
+          localStorage.removeItem('ekipbul_auth_provider');
+          localStorage.removeItem('userProfile');
+          localStorage.removeItem('onboardingCompleted');
+        } catch (storageError) {
+          console.error('Legacy auth storage cleanup failed:', storageError);
+        }
+
         // On first load (including after OAuth redirect), hydrate from existing session
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) {

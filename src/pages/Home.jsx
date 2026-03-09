@@ -7,18 +7,17 @@ import TrendingProjects from '@/components/landing/TrendingProjects';
 import HowItWorks from '@/components/landing/HowItWorks';
 import FAQ from '@/components/landing/FAQ';
 import CTASection from '@/components/landing/CTASection';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoadingAuth } = useAuth();
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('ekipbul_user_authenticated') === 'true';
-    const onboardingComplete = localStorage.getItem('ekipbul_onboarding_complete') === 'true';
-    
-    if (isAuthenticated && onboardingComplete) {
+    if (!isLoadingAuth && isAuthenticated) {
       navigate(createPageUrl('Explore'));
     }
-  }, [navigate]);
+  }, [isLoadingAuth, isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-950">

@@ -102,12 +102,8 @@ export default function Layout({ children }) {
       console.error('Supabase oturum kapatma hatası:', error);
     }
 
-    // Clear all auth-related data
-    localStorage.removeItem('user_session');
-    localStorage.removeItem('ekipbul_onboarding_complete');
-    localStorage.removeItem('ekipbul_user_authenticated');
-    localStorage.removeItem('ekipbul_auth_provider');
-    localStorage.removeItem('userProfile');
+    // Clear all stored data (including any legacy mock user data)
+    localStorage.clear();
     
     toast.success('Başarıyla çıkış yapıldı.');
     
