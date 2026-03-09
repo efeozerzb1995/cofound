@@ -188,9 +188,15 @@ export default function Settings() {
 
     try {
       setAvatarUploading(true);
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Profil fotoğrafı için oturum alınırken hata:', sessionError);
+        throw sessionError;
+      }
+
+      const user = sessionData?.session?.user;
       if (!user) {
+        console.error('Profil fotoğrafı için aktif oturum bulunamadı, kullanıcı yok.');
         toast.error('Profil fotoğrafı yüklemek için giriş yapmalısın.');
         return;
       }
