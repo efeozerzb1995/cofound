@@ -21,17 +21,9 @@ export default function Auth() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const checkOAuthRedirect = async () => {
+    const applySessionDecision = async (user) => {
+      if (!user) return;
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error('OAuth sonrası oturum alınırken hata:', sessionError);
-          return;
-        }
-
-        const user = sessionData?.session?.user;
-        if (!user) return;
-
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('id')
@@ -39,7 +31,7 @@ export default function Auth() {
           .maybeSingle();
 
         if (profileError) {
-          console.error('OAuth sonrası profil sorgulanırken hata:', profileError);
+          console.error('Profil sorgulanırken hata:', profileError);
           return;
         }
 
@@ -49,11 +41,30 @@ export default function Auth() {
           navigate(createPageUrl('Explore'));
         }
       } catch (error) {
-        console.error('OAuth sonrası kontrol sırasında beklenmeyen hata:', error);
+        console.error('Oturum sonrası karar verilirken hata:', error);
       }
     };
 
-    checkOAuthRedirect();
+    const runCheck = async () => {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Oturum alınırken hata:', sessionError);
+        return;
+      }
+      const user = sessionData?.session?.user ?? null;
+      await applySessionDecision(user);
+    };
+
+    runCheck();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const user = session?.user ?? null;
+        applySessionDecision(user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSocialLogin = async (provider) => {
