@@ -251,7 +251,7 @@ export default function Settings() {
 
       const userId = user.id;
 
-      // Upsert profile
+      // Insert or update profile (avoid onConflict issues in production)
       const profilePayload = {
         user_id: userId,
         full_name: profileData.name || null,
@@ -269,11 +269,35 @@ export default function Settings() {
         avatar_url: profileData.avatarUrl || null,
       };
 
-      const { error: profileError } = await supabase
+      const { data: existingProfile, error: existingProfileError } = await supabase
         .from('profiles')
-        .upsert(profilePayload, { onConflict: 'user_id' });
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (existingProfileError) {
+        console.error('Profil sorgulanırken hata:', existingProfileError);
+        throw existingProfileError;
+      }
+
+      let profileError = null;
+      if (existingProfile) {
+        const { error } = await supabase
+          .from('profiles')
+          .update(profilePayload)
+          .eq('user_id', userId);
+        profileError = error;
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .insert(profilePayload);
+        profileError = error;
+      }
+
+      if (profileError) {
+        console.error('Profil upsert hatası:', profileError);
+        throw profileError;
+      }
 
       // Sync skills: delete existing then insert current list
       const { error: deleteError } = await supabase
