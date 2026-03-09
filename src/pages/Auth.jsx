@@ -173,7 +173,7 @@ export default function Auth() {
             <span className="text-2xl font-bold">CoFound</span>
           </div>
 
-          {/* Testimonial */}
+          {/* Testimonial (generic placeholder) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -183,18 +183,10 @@ export default function Auth() {
             <Quote className="w-12 h-12 text-emerald-400 mb-6 opacity-50" />
             <blockquote className="space-y-6">
               <p className="text-3xl font-semibold leading-relaxed text-white">
-                "Birlikte çalışmak, başarının anahtarıdır. CoFound sayesinde hayallerimi gerçekleştirecek ekibi buldum."
+                "Doğru ekibi bulmak, fikirleri hayata geçirme hızını katlıyor. CoFound ile benzer hedeflere sahip insanlarla bir araya gelebilirsin."
               </p>
-              <footer className="flex items-center gap-4">
-                <img 
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
-                  alt="Elif Y."
-                  className="w-14 h-14 rounded-full border-2 border-emerald-400/50"
-                />
-                <div>
-                  <div className="font-semibold text-white text-lg">Elif Yılmaz</div>
-                  <div className="text-emerald-400">Yeditepe Üniversitesi</div>
-                </div>
+              <footer className="text-sm text-slate-300">
+                Bir CoFound kullanıcısının deneyiminden ilhamla.
               </footer>
             </blockquote>
           </motion.div>
