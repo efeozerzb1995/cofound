@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, SlidersHorizontal, Briefcase, Users, Mic, ArrowRight, X } from 'lucide-react';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import ProjectCard from '@/components/ui/ProjectCard';
 import UserCard from '@/components/ui/UserCard';
 import FilterPanel from '@/components/explore/FilterPanel';
@@ -19,6 +20,7 @@ const defaultFilters = {
 };
 
 export default function Explore() {
+  const { isLoading, user } = useRequireAuth();
   const [activeMainTab, setActiveMainTab] = useState('projects');
   const [activeProjectTab, setActiveProjectTab] = useState('foryou');
   const [filters, setFilters] = useState(defaultFilters);
@@ -154,6 +156,14 @@ export default function Explore() {
   const displayedProjects = activeProjectTab === 'foryou' ? forYouProjects : filteredProjects;
 
   const removeFilter = (key) => setFilters(prev => ({ ...prev, [key]: 'Tümü' }));
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0d0f14]">
+        <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0d0f14]">

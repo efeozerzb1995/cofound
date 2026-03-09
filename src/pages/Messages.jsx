@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ function formatMessageTime(createdAt) {
 
 export default function Messages() {
   const location = useLocation();
+  const { isLoading, user: authUser } = useRequireAuth();
   const newConversationUser = location.state?.user;
 
   const [activeTab, setActiveTab] = useState('people');
@@ -391,6 +393,14 @@ export default function Messages() {
   );
 
   const truncateName = (name, max = 22) => name.length > max ? name.slice(0, max) + '…' : name;
+
+  if (isLoading || !authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0d0f14] pt-16">
+        <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-[#0d0f14] flex overflow-hidden pt-16">

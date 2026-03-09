@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ const currentUserProfile = {
 export default function Matches() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoading, user } = useRequireAuth();
   const [activeTab, setActiveTab] = useState('recommended');
   const [applicationStatuses, setApplicationStatuses] = useState({});
 
@@ -75,6 +77,14 @@ export default function Matches() {
       appliedAt: '2024-02-13'
     }
   ];
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0d0f14] py-8">

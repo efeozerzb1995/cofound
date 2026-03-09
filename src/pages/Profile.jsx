@@ -28,10 +28,18 @@ import ExperienceTimeline from '@/components/profile/ExperienceTimeline';
 import ProjectPortfolio from '@/components/profile/ProjectPortfolio';
 import SimilarProfiles from '@/components/profile/SimilarProfiles';
 import ProfileAnalytics from '@/components/profile/ProfileAnalytics';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supabase } from '@/lib/supabase';
+
+const AuthGuard = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#0d0f14]">
+    <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
+  </div>
+);
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { isLoading: authLoading, user: authUser } = useRequireAuth();
   const isOwner = true; // This is the logged-in user's own profile
   const [profileData, setProfileData] = useState({
     name: '',
@@ -117,6 +125,10 @@ export default function Profile() {
 
     loadProfileFromSupabase();
   }, []);
+
+  if (authLoading || !authUser) {
+    return <AuthGuard />;
+  }
 
   const startEditLookingFor = () => {
     setLookingForDraft(lookingFor);

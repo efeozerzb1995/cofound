@@ -22,6 +22,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supabase } from '@/lib/supabase';
 
 const navigationItems = [
@@ -53,6 +54,7 @@ const Section = ({ label, hint, children }) => (
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { isLoading: authLoading, user: authUser } = useRequireAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isPublic, setIsPublic] = useState(false);
   const [selectedRegions, setSelectedRegions] = useState([]);
@@ -403,6 +405,14 @@ export default function Settings() {
   const updateExperience = (index, field, value) => {
     setExperiences(prev => prev.map((exp, i) => (i === index ? { ...exp, [field]: value } : exp)));
   };
+
+  if (authLoading || !authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
