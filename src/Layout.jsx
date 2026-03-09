@@ -32,6 +32,7 @@ import {
   Rocket
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 const navigation = [
   { name: 'Keşfet', href: 'Explore', icon: Compass },
@@ -94,7 +95,13 @@ export default function Layout({ children }) {
     return location.pathname === createPageUrl(page);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Supabase oturum kapatma hatası:', error);
+    }
+
     // Clear all auth-related data
     localStorage.removeItem('user_session');
     localStorage.removeItem('ekipbul_onboarding_complete');
