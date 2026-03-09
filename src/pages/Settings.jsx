@@ -242,9 +242,15 @@ export default function Settings() {
 
   const handleSaveAndExit = async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Oturum alınırken hata:', sessionError);
+        throw sessionError;
+      }
+
+      const user = sessionData?.session?.user;
       if (!user) {
+        console.error('Aktif oturum bulunamadı, kullanıcı yok.');
         toast.error('Profil kaydetmek için giriş yapmalısın.');
         return;
       }
