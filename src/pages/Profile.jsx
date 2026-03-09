@@ -24,7 +24,6 @@ import {
   Pencil,
   Check
 } from 'lucide-react';
-import { users } from '@/components/mockData';
 import ExperienceTimeline from '@/components/profile/ExperienceTimeline';
 import ProjectPortfolio from '@/components/profile/ProjectPortfolio';
 import SimilarProfiles from '@/components/profile/SimilarProfiles';
@@ -34,7 +33,20 @@ import { supabase } from '@/lib/supabase';
 export default function Profile() {
   const navigate = useNavigate();
   const isOwner = true; // This is the logged-in user's own profile
-  const [profileData, setProfileData] = useState(users[0]);
+  const [profileData, setProfileData] = useState({
+    name: '',
+    title: '',
+    university: '',
+    location: '',
+    bio: '',
+    motivation: '',
+    lookingFor: '',
+    avatar: '',
+    skills: [],
+    interests: [],
+    experience: [],
+    portfolio: [],
+  });
   const [lookingFor, setLookingFor] = useState('');
   const [editingLookingFor, setEditingLookingFor] = useState(false);
   const [lookingForDraft, setLookingForDraft] = useState('');
@@ -42,9 +54,17 @@ export default function Profile() {
   useEffect(() => {
     const loadProfileFromSupabase = async () => {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        if (!user) return;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Profil oturumu alınırken hata:', sessionError);
+          throw sessionError;
+        }
+
+        const user = sessionData?.session?.user;
+        if (!user) {
+          navigate(createPageUrl('Auth'));
+          return;
+        }
 
         const userId = user.id;
 
@@ -106,9 +126,17 @@ export default function Profile() {
   const saveLookingFor = async () => {
     try {
       setLookingFor(lookingForDraft);
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) return;
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Profil oturumu alınırken hata:', sessionError);
+        throw sessionError;
+      }
+
+      const user = sessionData?.session?.user;
+      if (!user) {
+        navigate(createPageUrl('Auth'));
+        return;
+      }
 
       await supabase
         .from('profiles')
