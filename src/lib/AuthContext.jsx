@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setIsLoadingAuth(false);
+      }
+
       // Do not set authError here; just reflect session state
       if (!currentUser) {
         setAuthError(null);

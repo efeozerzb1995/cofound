@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,42 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState('');
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const checkOAuthRedirect = async () => {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('OAuth sonrası oturum alınırken hata:', sessionError);
+          return;
+        }
+
+        const user = sessionData?.session?.user;
+        if (!user) return;
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('OAuth sonrası profil sorgulanırken hata:', profileError);
+          return;
+        }
+
+        if (!profile) {
+          setShowOnboarding(true);
+        } else {
+          navigate(createPageUrl('Explore'));
+        }
+      } catch (error) {
+        console.error('OAuth sonrası kontrol sırasında beklenmeyen hata:', error);
+      }
+    };
+
+    checkOAuthRedirect();
+  }, [navigate]);
 
   const handleSocialLogin = async (provider) => {
     setLoadingProvider(provider);
@@ -41,7 +77,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: supabaseProvider,
         options: {
-          redirectTo: window.location.origin + createPageUrl('Explore'),
+          redirectTo: window.location.origin + createPageUrl('Auth'),
         },
       });
 
