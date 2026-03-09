@@ -156,19 +156,15 @@ export const projects = [
 export const users = [
   {
     id: 1,
-    name: "Deniz Korkmaz",
-    title: "Genetik Öğrencisi",
-    university: "Yeditepe Üniversitesi",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop",
+    name: "Örnek Kullanıcı",
+    title: "Öğrenci",
+    university: "Üniversite",
+    avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop",
     bannerUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1500&h=500&fit=crop",
-    bio: "Yeditepe Üniversitesi Genetik ve Biyomühendislik 3. sınıf öğrencisiyim. Rejeneratif tıp ve hücresel tarım alanlarında araştırma yapıyorum. TÜBİTAK destekli projelerde yer almak istiyorum.",
+    bio: "Biyoteknoloji ve girişimcilik alanında projeler üzerinde çalışan bir öğrenciyim. Gerçek dünyada etki yaratacak takımlarla çalışmak istiyorum.",
     skills: ["Biyoinformatik", "Python", "Laboratuvar Deneyimi", "Hücre Kültürü", "CRISPR", "Veri Analizi"],
     interests: ["Rejeneratif Tıp", "Yapay Et", "Gen Terapisi", "Biyoteknoloji"],
-    portfolio: [
-      { type: "github", url: "github.com/denizkorkmaz" },
-      { type: "linkedin", url: "linkedin.com/in/denizkorkmaz" },
-      { type: "website", url: "denizkorkmaz.com" }
-    ],
+    portfolio: [],
     experience: [
       { title: "Araştırma Stajyeri", company: "Yeditepe Moleküler Biyoloji Lab", duration: "6 ay" },
       { title: "Proje Asistanı", company: "TÜBİTAK 2209-A", duration: "1 yıl" }

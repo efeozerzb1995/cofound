@@ -49,7 +49,7 @@ export default function CVSection({ isOwnProfile = true }) {
     // Simulate file upload
     setTimeout(() => {
       const mockCV = {
-        fileName: 'Deniz_Korkmaz_CV.pdf',
+        fileName: 'profil_cv.pdf',
         fileSize: '248 KB',
         uploadDate: new Date().toISOString()
       };

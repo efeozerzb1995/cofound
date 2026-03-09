@@ -274,12 +274,12 @@ export default function Layout({ children }) {
                   <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700" align="end">
                     <div className="px-2 py-1.5">
                       <p className="text-sm font-medium text-white flex items-center gap-1">
-                        Deniz Korkmaz
+                        Profilim
                         {localStorage.getItem('ekipbul_user_verified') === 'true' && (
                           <BadgeCheck className="w-4 h-4 text-blue-400" />
                         )}
                       </p>
-                      <p className="text-xs text-slate-400">deniz@yeditepe.edu.tr</p>
+                      <p className="text-xs text-slate-400">Hesap ayarları ve profil bilgileri</p>
                     </div>
                     <DropdownMenuSeparator className="bg-slate-700" />
                     <DropdownMenuItem 
@@ -328,16 +328,16 @@ export default function Layout({ children }) {
                     <div className="flex items-center gap-3 pb-6 border-b border-slate-800">
                       <Avatar className="h-12 w-12 border border-slate-700">
                         <AvatarImage src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" />
-                        <AvatarFallback className="bg-slate-700 text-slate-300">DK</AvatarFallback>
+                        <AvatarFallback className="bg-slate-700 text-slate-300">CF</AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium text-white flex items-center gap-1">
-                          Deniz Korkmaz
+                          CoFound Kullanıcısı
                           {localStorage.getItem('ekipbul_user_verified') === 'true' && (
                             <BadgeCheck className="w-4 h-4 text-blue-400" />
                           )}
                         </p>
-                        <p className="text-xs text-slate-400">Genetik Öğrencisi</p>
+                        <p className="text-xs text-slate-400">Profilini Ayarlar bölümünden güncelle</p>
                       </div>
                     </div>
 

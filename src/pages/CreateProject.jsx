@@ -66,15 +66,15 @@ export default function CreateProject() {
       description: formData.description,
       category: formData.category,
       program: formData.program,
-      university: "Yeditepe Üniversitesi", // From user profile
+      university: formData.university || "Üniversite bilgisi",
       verified: false,
       seeking: formData.roles.map(r => r.role),
       skills: formData.roles.flatMap(r => r.skills),
       tags: formData.tags,
       owner: {
-        name: "Deniz Korkmaz",
-        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop",
-        university: "Yeditepe Üniversitesi"
+        name: formData.ownerName || "Proje sahibi",
+        avatar: "",
+        university: formData.university || ""
       },
       createdAt: new Date().toISOString().split('T')[0],
       applicants: 0

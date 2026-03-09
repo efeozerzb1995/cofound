@@ -492,7 +492,7 @@ export default function Settings() {
                       <Input
                         value={profileData.name}
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        placeholder="Örn: Deniz Korkmaz"
+                        placeholder="Örn: Ad Soyad"
                         className="bg-slate-800/50 border-slate-700 text-white placeholder-slate-500 focus:border-emerald-500/50"
                       />
                     </Section>
