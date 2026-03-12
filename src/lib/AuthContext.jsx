@@ -131,6 +131,9 @@ export const AuthProvider = ({ children }) => {
       const currentUser = sessionData?.session?.user ?? null;
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
+      if (!currentUser) {
+        setNeedsOnboarding(false);
+      }
       // No hard error when not authenticated; routes can handle public vs private access
       setAuthError(null);
       setIsLoadingAuth(false);

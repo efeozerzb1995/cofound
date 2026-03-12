@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { needsOnboarding, markOnboardingComplete } = useAuth();
+  const { needsOnboarding, markOnboardingComplete, isAuthenticated } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,12 +76,14 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // When context indicates onboarding is needed, ensure modal is open
+  // When context indicates onboarding is needed AND there is an active session, show modal
   useEffect(() => {
-    if (needsOnboarding) {
+    if (needsOnboarding && isAuthenticated) {
       setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
     }
-  }, [needsOnboarding]);
+  }, [needsOnboarding, isAuthenticated]);
 
   const handleSocialLogin = async (provider) => {
     setLoadingProvider(provider);
