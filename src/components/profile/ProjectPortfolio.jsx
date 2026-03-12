@@ -3,35 +3,8 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 
-const fallbackProjects = [
-  {
-    id: 1,
-    title: 'Yapay Et Ar-Ge',
-    role: 'Takım Lideri',
-    image: 'https://images.unsplash.com/photo-1628595351029-c2bf17511435?w=400&h=300&fit=crop'
-  },
-  {
-    id: 2,
-    title: 'AI Sağlık Asistanı',
-    role: 'Co-Founder',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop'
-  },
-  {
-    id: 3,
-    title: 'Sürdürülebilir Tarım',
-    role: 'Yazılım Geliştirici',
-    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop'
-  },
-  {
-    id: 4,
-    title: 'EdTech Platform',
-    role: 'Product Designer',
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop'
-  }
-];
-
 export default function ProjectPortfolio() {
-  const [projects, setProjects] = useState(fallbackProjects);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -67,6 +40,14 @@ export default function ProjectPortfolio() {
     loadProjects();
   }, []);
 
+  if (projects.length === 0) {
+    return (
+      <div className="py-4 text-sm text-slate-500">
+        Henüz projeni eklemedin. İlk projen Profil &gt; Ayarlar bölümünden oluşturulduğunda burada görünecek.
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {projects.map((project, idx) => (
@@ -79,20 +60,28 @@ export default function ProjectPortfolio() {
         >
           {/* Project Image */}
           <div className="relative h-28 overflow-hidden">
-            <img 
-              src={project.image} 
-              alt={project.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            />
+            {project.image ? (
+              <img 
+                src={project.image} 
+                alt={project.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-900 text-slate-500 text-xs">
+                Kapak görseli yok
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
           </div>
           
           {/* Project Info */}
           <div className="p-3">
             <h4 className="text-white text-sm font-semibold mb-1 truncate">{project.title}</h4>
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-xs">
-              {project.role}
-            </Badge>
+            {project.role && (
+              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-xs">
+                {project.role}
+              </Badge>
+            )}
           </div>
         </motion.div>
       ))}

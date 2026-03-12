@@ -27,7 +27,6 @@ import {
 import ExperienceTimeline from '@/components/profile/ExperienceTimeline';
 import ProjectPortfolio from '@/components/profile/ProjectPortfolio';
 import SimilarProfiles from '@/components/profile/SimilarProfiles';
-import ProfileAnalytics from '@/components/profile/ProfileAnalytics';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supabase } from '@/lib/supabase';
 
@@ -371,11 +370,8 @@ export default function Profile() {
             </Card>
           </div>
 
-          {/* RIGHT COLUMN (25%) - Analytics & Network */}
+          {/* RIGHT COLUMN (25%) - Network */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Visitors */}
-            <ProfileAnalytics />
-
             {/* Similar Profiles */}
             <Card className="bg-[#111318]/80 backdrop-blur-xl border-slate-800/60">
               <CardHeader>

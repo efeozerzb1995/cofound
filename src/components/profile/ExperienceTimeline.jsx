@@ -1,37 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Briefcase, GraduationCap, Rocket } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 
-const fallbackTimelineData = [
-  {
-    year: '2025 - Günümüz',
-    title: 'Kurucu Ortak',
-    company: 'CoFound Project',
-    description: 'Üniversite öğrencilerini projeler ve girişimler üzerinden buluşturan platform.',
-    icon: Rocket,
-    color: 'emerald'
-  },
-  {
-    year: '2024 Yaz',
-    title: 'Stajyer Araştırmacı',
-    company: 'TÜBİTAK MAM',
-    description: 'Genetik laboratuvarında CRISPR-Cas9 gen düzenleme teknolojileri üzerine çalışma.',
-    icon: Briefcase,
-    color: 'blue'
-  },
-  {
-    year: '2022',
-    title: 'Biyomühendislik Başlangıç',
-    company: 'Yıldız Teknik Üniversitesi',
-    description: 'Biyomühendislik bölümünde lisans eğitimine başlama.',
-    icon: GraduationCap,
-    color: 'purple'
-  }
-];
-
 export default function ExperienceTimeline() {
-  const [timelineData, setTimelineData] = useState(fallbackTimelineData);
+  const [timelineData, setTimelineData] = useState([]);
 
   useEffect(() => {
     const loadExperiences = async () => {
@@ -74,16 +47,15 @@ export default function ExperienceTimeline() {
       {/* Vertical line */}
       <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500/50 via-blue-500/50 to-purple-500/50" />
       
-      <div className="space-y-6">
-        {timelineData.map((item, idx) => {
-          const Icon = item.icon;
-          const colorClasses = {
-            emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
-            blue: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
-            purple: 'bg-purple-500/20 text-purple-400 border-purple-500/50'
-          };
-          
-          return (
+      {timelineData.length === 0 ? (
+        <div className="pl-16 py-4">
+          <p className="text-xs text-slate-500">
+            Henüz deneyim eklenmemiş. İlk deneyimini Profil &gt; Ayarlar bölümünden ekleyebilirsin.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {timelineData.map((item, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: -20 }}
@@ -92,8 +64,8 @@ export default function ExperienceTimeline() {
               className="relative flex items-start gap-4 pl-16"
             >
               {/* Icon */}
-              <div className={`absolute left-3 w-6 h-6 rounded-full border-2 flex items-center justify-center ${colorClasses[item.color]}`}>
-                <Icon className="w-3 h-3" />
+              <div className="absolute left-3 w-6 h-6 rounded-full border-2 flex items-center justify-center bg-emerald-500/20 text-emerald-400 border-emerald-500/50">
+                <Briefcase className="w-3 h-3" />
               </div>
               
               {/* Content */}
@@ -104,9 +76,9 @@ export default function ExperienceTimeline() {
                 <p className="text-xs text-slate-400 leading-relaxed">{item.description}</p>
               </div>
             </motion.div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

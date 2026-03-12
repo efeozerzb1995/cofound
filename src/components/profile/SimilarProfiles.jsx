@@ -1,34 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const suggestions = [
-  {
-    id: 1,
-    name: 'Ahmet Yılmaz',
-    title: 'Yazılım Mühendisi',
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Elif Demir',
-    title: 'Ürün Tasarımcı',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'Can Öztürk',
-    title: 'Veri Bilimci',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop'
-  }
-];
+import { supabase } from '@/lib/supabase';
 
 export default function SimilarProfiles() {
+  const [profiles, setProfiles] = useState([]);
+
+  useEffect(() => {
+    const loadSimilarProfiles = async () => {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        const currentUser = sessionData?.session?.user;
+        if (!currentUser) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, title, avatar_url, is_public')
+          .neq('user_id', currentUser.id)
+          .eq('is_public', true)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (error) throw error;
+        setProfiles(
+          (data || []).map((row) => ({
+            id: row.user_id,
+            name: row.full_name || 'Kullanıcı',
+            title: row.title || '',
+            avatar: row.avatar_url || '',
+          }))
+        );
+      } catch (err) {
+        console.error('Benzer profiller yüklenemedi:', err);
+        setProfiles([]);
+      }
+    };
+
+    loadSimilarProfiles();
+  }, []);
+
+  if (profiles.length === 0) {
+    return (
+      <p className="text-xs text-slate-500">
+        Henüz benzer profil önerisi yok. Profilini doldurdukça burada öneriler göreceksin.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {suggestions.map((person, idx) => (
+      {profiles.map((person, idx) => (
         <motion.div
           key={person.id}
           initial={{ opacity: 0, x: 20 }}
