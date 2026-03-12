@@ -16,9 +16,14 @@ export default function ChatOnboarding({ open, onComplete }) {
   const [isTyping, setIsTyping] = useState(false);
   const [userData, setUserData] = useState({
     name: '',
-    goal: '',
-    skills: '',
+    title: '',
+    university: '',
+    location: '',
     bio: '',
+    motivation: '',
+    lookingFor: '',
+    hasProjectIdea: null,
+    skills: '',
     useBio: true
   });
   const messagesEndRef = useRef(null);
@@ -65,44 +70,72 @@ export default function ChatOnboarding({ open, onComplete }) {
     addUserMessage(trimmedInput);
 
     if (step === 1) {
-      // Name step
+      // 1 - Name step
       setUserData(prev => ({ ...prev, name: trimmedInput }));
       addAIMessage(
-        `Tanıştığımıza memnun oldum, ${trimmedInput}! Platformda temel hedefin nedir?`,
-        ['Proje Üretmek', 'Bir Ekibe Katılmak', 'Sadece İncelemek']
+        `Tanıştığımıza memnun oldum, ${trimmedInput}! Ne iş yapıyorsun? (Örn: Yazılım Mühendisi, Tasarımcı, Öğrenci)`
       );
       setStep(2);
+    } else if (step === 2) {
+      // 2 - Title step
+      setUserData(prev => ({ ...prev, title: trimmedInput }));
+      addAIMessage("Harika! Hangi üniversitede okuyorsun veya mezun oldun?");
+      setStep(3);
     } else if (step === 3) {
-      // Skills step
+      // 3 - University step
+      setUserData(prev => ({ ...prev, university: trimmedInput }));
+      addAIMessage("Süper, teşekkürler. Şu anda hangi şehirde yaşıyorsun?");
+      setStep(4);
+    } else if (step === 4) {
+      // 4 - Location step
+      setUserData(prev => ({ ...prev, location: trimmedInput }));
+      addAIMessage("Not aldım. Peki CoFound'da olma motivasyonun ne? Neden bir kurucu ortak arıyorsun?");
+      setStep(5);
+    } else if (step === 5) {
+      // 5 - Motivation step
+      setUserData(prev => ({ ...prev, motivation: trimmedInput }));
+      addAIMessage("Anladım, çok değerli bir motivasyon. 🙌 Hangi yeteneklere sahipsin? (Virgülle ayır, Örn: React, Python, Tasarım)");
+      setStep(6);
+    } else if (step === 6) {
+      // 6 - Skills step
       setUserData(prev => ({ ...prev, skills: trimmedInput }));
       handleBioGeneration(trimmedInput);
-      setStep(4);
-    } else if (step === 5) {
-      // Custom bio
+      setStep(7);
+    } else if (step === 8) {
+      // 8 - Custom bio
       setUserData(prev => ({ ...prev, bio: trimmedInput, useBio: false }));
-      addAIMessage("Süper! Profilin hazırlandı ve seni harika projelerle eşleştirmek için sabırsızlanıyorum. Hazırsan başlayalım! 🎉");
-      setStep(6);
+      addAIMessage("Harika, çok iyi bir 'Hakkımda' yazısı! 🎯 Şimdi takımında hangi özellikleri aradığını anlatır mısın?");
+      setStep(9);
+    } else if (step === 9) {
+      // 9 - Looking for
+      setUserData(prev => ({ ...prev, lookingFor: trimmedInput }));
+      addAIMessage(
+        "Süper, bunu da ekledim. Aklında bir proje fikri var mı?",
+        ['Evet, var', 'Hayır, henüz değil']
+      );
+      setStep(10);
     }
   };
 
   const handleQuickReply = (reply) => {
     addUserMessage(reply);
 
-    if (step === 2) {
-      // Goal step
-      setUserData(prev => ({ ...prev, goal: reply }));
-      addAIMessage("Harika bir hedef! Hangi konularda uzmansın veya kendini geliştiriyorsun? (Örn: Python, CRISPR, Tasarım)");
-      setStep(3);
-    } else if (step === 4) {
-      // Bio decision
+    if (step === 7) {
+      // 7 - Bio decision
       if (reply === 'Evet, Harika!') {
         setUserData(prev => ({ ...prev, useBio: true }));
-        addAIMessage("Süper! Profilin hazırlandı ve seni harika projelerle eşleştirmek için sabırsızlanıyorum. Hazırsan başlayalım! 🎉");
-        setStep(6);
+        addAIMessage("Süper! Profiline ekledim. 🎉 Şimdi takımında hangi özellikleri aradığını anlatır mısın?");
+        setStep(9);
       } else {
         addAIMessage("Tabii ki! Kendi yazmak istediğin 'Hakkımda' yazısını gönder:");
-        setStep(5);
+        setStep(8);
       }
+    } else if (step === 10) {
+      // 10 - Has project idea
+      const hasIdea = reply.toLowerCase().startsWith('evet');
+      setUserData(prev => ({ ...prev, hasProjectIdea: hasIdea }));
+      addAIMessage("Harika! Artık seni uygun projeler ve ekip arkadaşlarıyla eşleştirebiliriz. Hazırsan başlayalım! 🎉");
+      setStep(11);
     }
   };
 
@@ -120,12 +153,7 @@ export default function ChatOnboarding({ open, onComplete }) {
     // Save to localStorage
     localStorage.setItem('onboardingCompleted', 'true');
     localStorage.setItem('ekipbul_onboarding_complete', 'true');
-    localStorage.setItem('userProfile', JSON.stringify({
-      name: userData.name,
-      goal: userData.goal,
-      skills: userData.skills,
-      bio: userData.bio
-    }));
+    localStorage.setItem('userProfile', JSON.stringify(userData));
 
     toast.success('Profilin başarıyla oluşturuldu! 🎉');
     
@@ -244,7 +272,7 @@ export default function ChatOnboarding({ open, onComplete }) {
           )}
 
           {/* Completion Button */}
-          {step === 6 && (
+          {step === 11 && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -265,7 +293,7 @@ export default function ChatOnboarding({ open, onComplete }) {
         </div>
 
         {/* Input Area */}
-        {step < 6 && (
+        {step < 11 && (
           <div className="p-4 border-t border-slate-200">
             <div className="flex gap-2">
               <input

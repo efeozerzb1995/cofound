@@ -174,13 +174,13 @@ export default function Auth() {
       const profilePayload = {
         user_id: userId,
         full_name: data.name || user?.user_metadata?.full_name || null,
-        title: data.goal || null,
-        university: null,
-        location: null,
+        title: data.title || null,
+        university: data.university || null,
+        location: data.location || null,
         about: data.bio || null,
-        motivation: data.goal || null,
-        looking_for: data.goal || null,
-        has_project_idea: false,
+        motivation: data.motivation || null,
+        looking_for: data.lookingFor || null,
+        has_project_idea: !!data.hasProjectIdea,
       };
 
       console.log('[Auth] Onboarding profile upsert payload', {
@@ -221,6 +221,39 @@ export default function Auth() {
         }
       } else {
         console.warn('[Auth] Onboarding complete but no Supabase userId found. Profile not saved to Supabase.');
+      }
+
+      // Sync skills table from onboarding skills string
+      try {
+        const skills = Array.isArray(data.skills)
+          ? data.skills
+          : (data.skills || '')
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean);
+
+        if (userId && skills.length > 0) {
+          // Clear existing skills for this user to avoid duplicates
+          const { error: deleteError } = await supabase
+            .from('skills')
+            .delete()
+            .eq('user_id', userId);
+          if (deleteError) {
+            console.error('[Auth] Onboarding skills delete error:', deleteError);
+          }
+
+          const rows = skills.map(name => ({ user_id: userId, name }));
+          const { error: insertError } = await supabase
+            .from('skills')
+            .insert(rows);
+          if (insertError) {
+            console.error('[Auth] Onboarding skills insert error:', insertError);
+          } else {
+            console.log('[Auth] Onboarding skills saved successfully');
+          }
+        }
+      } catch (skillsError) {
+        console.error('[Auth] Unexpected error while saving onboarding skills:', skillsError);
       }
 
       // Also keep localStorage for now
