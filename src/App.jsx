@@ -17,7 +17,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, needsOnboarding } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, needsOnboarding, isAuthenticated } = useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
@@ -40,8 +40,13 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // If user needs onboarding, force them to Auth page where onboarding modal is shown
-  if (needsOnboarding && location.pathname !== '/Auth') {
+  // If user needs onboarding (and auth is fully loaded), force them to Auth page where onboarding modal is shown
+  if (
+    !isLoadingAuth &&
+    isAuthenticated &&
+    needsOnboarding &&
+    location.pathname !== '/Auth'
+  ) {
     return <Navigate to="/Auth" replace />;
   }
 
