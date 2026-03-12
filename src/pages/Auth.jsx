@@ -152,12 +152,77 @@ export default function Auth() {
     }
   };
 
-  const handleOnboardingComplete = (data) => {
-    // Save user profile data
-    localStorage.setItem('userProfile', JSON.stringify(data));
-    localStorage.setItem('ekipbul_onboarding_complete', 'true');
-    toast.success('Profil oluşturuldu! Hoş geldin.');
-    navigate(createPageUrl('Explore'));
+  const handleOnboardingComplete = async (data) => {
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('[Auth] Onboarding getSession error:', sessionError);
+      }
+
+      const user = sessionData?.session?.user || null;
+      const userId = user?.id || null;
+
+      const profilePayload = {
+        user_id: userId,
+        full_name: data.name || user?.user_metadata?.full_name || null,
+        title: data.goal || null,
+        university: null,
+        location: null,
+        about: data.bio || null,
+        motivation: data.goal || null,
+        looking_for: data.goal || null,
+        has_project_idea: false,
+      };
+
+      console.log('[Auth] Onboarding profile upsert payload', {
+        userId,
+        payload: profilePayload,
+      });
+
+      if (userId) {
+        // Check if profile exists for this user
+        const { data: existingProfile, error: existingProfileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (existingProfileError) {
+          console.error('[Auth] Onboarding existing profile fetch error:', existingProfileError);
+        } else {
+          let profileError = null;
+          if (existingProfile) {
+            const { error } = await supabase
+              .from('profiles')
+              .update(profilePayload)
+              .eq('user_id', userId);
+            profileError = error;
+          } else {
+            const { error } = await supabase
+              .from('profiles')
+              .insert(profilePayload);
+            profileError = error;
+          }
+
+          if (profileError) {
+            console.error('[Auth] Onboarding profile save error:', profileError);
+          } else {
+            console.log('[Auth] Onboarding profile saved successfully');
+          }
+        }
+      } else {
+        console.warn('[Auth] Onboarding complete but no Supabase userId found. Profile not saved to Supabase.');
+      }
+
+      // Also keep localStorage for now
+      localStorage.setItem('userProfile', JSON.stringify(data));
+      localStorage.setItem('ekipbul_onboarding_complete', 'true');
+      toast.success('Profil oluşturuldu! Hoş geldin.');
+      navigate(createPageUrl('Explore'));
+    } catch (error) {
+      console.error('[Auth] Unexpected error during onboarding complete:', error);
+      toast.error('Profil oluşturulurken bir hata oluştu.');
+    }
   };
 
   return (
