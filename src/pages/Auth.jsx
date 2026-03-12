@@ -9,9 +9,11 @@ import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import ChatOnboarding from '@/components/onboarding/ChatOnboarding';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { needsOnboarding, markOnboardingComplete } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,6 +75,13 @@ export default function Auth() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // When context indicates onboarding is needed, ensure modal is open
+  useEffect(() => {
+    if (needsOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, [needsOnboarding]);
 
   const handleSocialLogin = async (provider) => {
     setLoadingProvider(provider);
@@ -218,6 +227,8 @@ export default function Auth() {
       localStorage.setItem('userProfile', JSON.stringify(data));
       localStorage.setItem('ekipbul_onboarding_complete', 'true');
       toast.success('Profil oluşturuldu! Hoş geldin.');
+      setShowOnboarding(false);
+      markOnboardingComplete();
       navigate(createPageUrl('Explore'));
     } catch (error) {
       console.error('[Auth] Unexpected error during onboarding complete:', error);

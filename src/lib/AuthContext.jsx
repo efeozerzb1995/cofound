@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Kept for compatibility
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -34,6 +35,11 @@ export const AuthProvider = ({ children }) => {
           const currentUser = sessionData?.session?.user ?? null;
           setUser(currentUser);
           setIsAuthenticated(!!currentUser);
+          if (currentUser) {
+            await checkNeedsOnboarding(currentUser);
+          } else {
+            setNeedsOnboarding(false);
+          }
         }
       } catch (error) {
         console.error('Unexpected error while initializing auth session:', error);
@@ -45,7 +51,7 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -58,6 +64,9 @@ export const AuthProvider = ({ children }) => {
       // Do not set authError here; just reflect session state
       if (!currentUser) {
         setAuthError(null);
+        setNeedsOnboarding(false);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        await checkNeedsOnboarding(currentUser);
       }
     });
 
@@ -65,6 +74,32 @@ export const AuthProvider = ({ children }) => {
       authListener?.subscription?.unsubscribe?.();
     };
   }, []);
+
+  const checkNeedsOnboarding = async (currentUser) => {
+    try {
+      if (!currentUser) {
+        setNeedsOnboarding(false);
+        return;
+      }
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Onboarding profile check failed:', profileError);
+        // On error, don't force onboarding; fail soft
+        setNeedsOnboarding(false);
+        return;
+      }
+
+      setNeedsOnboarding(!profile);
+    } catch (error) {
+      console.error('Onboarding check unexpected error:', error);
+      setNeedsOnboarding(false);
+    }
+  };
 
   const checkAppState = async () => {
     try {
@@ -127,6 +162,10 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/Auth';
   };
 
+  const markOnboardingComplete = () => {
+    setNeedsOnboarding(false);
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -137,7 +176,9 @@ export const AuthProvider = ({ children }) => {
       appPublicSettings,
       logout,
       navigateToLogin,
-      checkAppState
+      checkAppState,
+      needsOnboarding,
+      markOnboardingComplete
     }}>
       {children}
     </AuthContext.Provider>
