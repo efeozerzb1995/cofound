@@ -179,7 +179,7 @@ export default function Explore() {
         return matchesCategory && matchesStage && matchesRole && matchesSearch;
       })
       .sort((a, b) => b.matchScore - a.matchScore);
-  }, [filters, searchQuery]);
+  }, [filters, searchQuery, projects]);
 
   const filteredUsers = useMemo(() => {
     return users
