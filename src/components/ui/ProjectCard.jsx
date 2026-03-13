@@ -143,7 +143,7 @@ export default function ProjectCard({ project, matchScore, showAIBadge }) {
               {project.website && (
                 <div className="text-center flex-shrink-0">
                   <span className="text-slate-600 block text-[10px] uppercase tracking-wide mb-0.5">Website</span>
-                  
+                  <a
                     href={project.website}
                     target="_blank"
                     rel="noopener noreferrer"
