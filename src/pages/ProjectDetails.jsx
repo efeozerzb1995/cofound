@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,27 +42,84 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
-import { projects } from '@/components/mockData';
+import { supabase } from '@/lib/supabase';
 import confetti from 'canvas-confetti';
 
 export default function ProjectDetails() {
-  const location = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const projectId = location.state?.projectId;
+  const [project, setProject] = useState(null);
+  const [owner, setOwner] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [applicationText, setApplicationText] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [includeProfile, setIncludeProfile] = useState(true);
   const [hasApplied, setHasApplied] = useState(false);
 
-  const project = projects.find(p => p.id === projectId);
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      setError('Geçersiz proje adresi');
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-  if (!project) {
+        if (cancelled) return;
+        if (projectError) {
+          setError(projectError.message);
+          setProject(null);
+          setLoading(false);
+          return;
+        }
+        setProject(projectData || null);
+        if (projectData?.owner_id) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, avatar_url, university')
+            .eq('user_id', projectData.owner_id)
+            .maybeSingle();
+          if (!cancelled) setOwner(profileData || null);
+        } else {
+          if (!cancelled) setOwner(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.message || 'Proje yüklenemedi');
+          setProject(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-slate-600 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !project) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400">Proje bulunamadı</p>
-          <Button 
+          <p className="text-slate-400">{error || 'Proje bulunamadı'}</p>
+          <Button
             onClick={() => navigate(createPageUrl('Explore'))}
             className="mt-4 bg-emerald-500 hover:bg-emerald-600"
           >
@@ -72,6 +129,15 @@ export default function ProjectDetails() {
       </div>
     );
   }
+
+  const seeking = Array.isArray(project.seeking) ? project.seeking : [];
+  const skills = Array.isArray(project.skills) ? project.skills : [];
+  const tags = Array.isArray(project.tags) ? project.tags : [];
+  const ownerDisplay = {
+    name: owner?.full_name || 'Proje Sahibi',
+    avatar: owner?.avatar_url || '',
+    university: owner?.university || '',
+  };
 
   const handleApply = () => {
     setIsApplicationModalOpen(false);
@@ -89,30 +155,30 @@ export default function ProjectDetails() {
   };
 
   const handleMessageOwner = () => {
-    navigate(createPageUrl('Messages'), { 
-      state: { 
+    navigate(createPageUrl('Messages'), {
+      state: {
         user: {
-          name: project.owner.name,
-          email: `${project.owner.name.toLowerCase().replace(' ', '.')}@example.com`,
-          avatar: project.owner.avatar,
+          name: ownerDisplay.name,
+          email: `${ownerDisplay.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+          avatar: ownerDisplay.avatar,
           title: 'Proje Sahibi'
         }
-      } 
+      }
     });
   };
 
-  // Mock team members
   const teamMembers = [
-    { name: project.owner.name, avatar: project.owner.avatar, role: 'Proje Sahibi' },
-    { name: 'Mehmet Yılmaz', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', role: 'Geliştirici' },
+    { name: ownerDisplay.name, avatar: ownerDisplay.avatar, role: 'Proje Sahibi' },
   ];
 
-  // Mock detailed requirements
   const detailedRequirements = {
-    technical: project.skills.slice(0, 3),
+    technical: skills.slice(0, 3),
     soft: ['Takım Çalışması', 'Problem Çözme', 'İletişim'],
     experience: ['Laboratuvar deneyimi', 'Proje yönetimi']
   };
+
+  const applicantsCount = project.applicants ?? 0;
+  const isVerified = project.is_verified ?? project.verified ?? false;
 
   return (
     <div className="min-h-screen bg-slate-900 py-8">
@@ -151,7 +217,7 @@ export default function ProjectDetails() {
                         <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/30">
                           {project.program}
                         </Badge>
-                        {project.verified && (
+                        {isVerified && (
                           <Badge className="bg-green-500/10 text-green-400 border border-green-500/30">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Doğrulanmış
@@ -168,7 +234,7 @@ export default function ProjectDetails() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      {project.applicants} başvuru
+                      {applicantsCount} başvuru
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-4 h-4" />
@@ -272,7 +338,7 @@ export default function ProjectDetails() {
                       <div>
                         <h4 className="text-white font-medium mb-3">Aranan Roller</h4>
                         <div className="space-y-3">
-                          {project.seeking.map((role, idx) => (
+                          {seeking.map((role, idx) => (
                             <div key={idx} className="p-4 rounded-lg bg-slate-700/30 border border-slate-700/50">
                               <h5 className="text-emerald-400 font-medium">{role}</h5>
                               <p className="text-sm text-slate-400 mt-1">
@@ -321,7 +387,7 @@ export default function ProjectDetails() {
                         ))}
                         <div className="p-6 rounded-xl bg-slate-700/20 border-2 border-dashed border-slate-700/50 text-center">
                           <p className="text-slate-400 mb-2">Takıma sen de katıl!</p>
-                          <p className="text-sm text-slate-500">Daha {project.seeking.length} pozisyon açık</p>
+                          <p className="text-sm text-slate-500">Daha {seeking.length} pozisyon açık</p>
                         </div>
                       </div>
                     </CardContent>
@@ -413,14 +479,14 @@ export default function ProjectDetails() {
                   <CardContent>
                     <div className="flex items-center gap-3 mb-4">
                       <Avatar className="w-12 h-12 border-2 border-slate-600">
-                        <AvatarImage src={project.owner.avatar} />
+                        <AvatarImage src={ownerDisplay.avatar} />
                         <AvatarFallback className="bg-slate-700 text-slate-300">
-                          {project.owner.name.split(' ').map(n => n[0]).join('')}
+                          {ownerDisplay.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="text-white font-medium">{project.owner.name}</h4>
-                        <p className="text-sm text-slate-400">{project.owner.university}</p>
+                        <h4 className="text-white font-medium">{ownerDisplay.name}</h4>
+                        <p className="text-sm text-slate-400">{ownerDisplay.university}</p>
                       </div>
                     </div>
                     <Button 
@@ -463,7 +529,7 @@ export default function ProjectDetails() {
                       </div>
                       <div className="flex items-center justify-between text-slate-300">
                         <span className="text-slate-400">Başvuru Sayısı</span>
-                        <span className="font-medium">{project.applicants} kişi</span>
+                        <span className="font-medium">{applicantsCount} kişi</span>
                       </div>
                     </div>
                   </CardContent>
@@ -482,7 +548,7 @@ export default function ProjectDetails() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag, idx) => (
+                      {tags.map((tag, idx) => (
                         <Badge key={idx} className="bg-slate-700/50 text-slate-300">
                           {tag}
                         </Badge>
@@ -511,7 +577,7 @@ export default function ProjectDetails() {
                     <SelectValue placeholder="Bir pozisyon seç..." />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    {project.seeking.map((role, idx) => (
+                    {seeking.map((role, idx) => (
                       <SelectItem 
                         key={idx} 
                         value={`role_${idx}`}

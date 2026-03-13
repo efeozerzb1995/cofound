@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'r
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProjectDetails from './pages/ProjectDetails';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -58,17 +59,27 @@ const AuthenticatedApp = () => {
           <MainPage />
         </LayoutWrapper>
       } />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
-      ))}
+      <Route
+        path="/project/:id"
+        element={
+          <LayoutWrapper currentPageName="ProjectDetails">
+            <ProjectDetails />
+          </LayoutWrapper>
+        }
+      />
+      {Object.entries(Pages)
+        .filter(([path]) => path !== 'ProjectDetails')
+        .map(([path, Page]) => (
+          <Route
+            key={path}
+            path={`/${path}`}
+            element={
+              <LayoutWrapper currentPageName={path}>
+                <Page />
+              </LayoutWrapper>
+            }
+          />
+        ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Bookmark, ChevronDown, Link2, Plus, ArrowRight } from 'lucide-react';
 
@@ -39,7 +38,7 @@ export default function ProjectCard({ project, matchScore, showAIBadge }) {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    navigate(createPageUrl('ProjectDetails'), { state: { projectId: project.id } });
+    navigate(`/project/${project.id}`);
   };
 
   const formatDate = (dateStr) => {

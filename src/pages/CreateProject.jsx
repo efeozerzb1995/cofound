@@ -110,7 +110,7 @@ export default function CreateProject() {
     toast.success('Projen Yayında! 🚀', { description: 'Ekip üyeleri aramaya başla!' });
 
     setTimeout(() => {
-      navigate(createPageUrl('ProjectDetails'), { state: { projectId: data.id } });
+      navigate(`/project/${data.id}`);
     }, 1500);
   };
 
