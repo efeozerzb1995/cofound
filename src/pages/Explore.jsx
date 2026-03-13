@@ -5,7 +5,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import ProjectCard from '@/components/ui/ProjectCard';
 import UserCard from '@/components/ui/UserCard';
 import FilterPanel from '@/components/explore/FilterPanel';
-import { projects, calculateMatchScore } from '@/components/mockData';
 import { supabase } from '@/lib/supabase';
 
 const currentUserProfile = {
@@ -21,6 +20,8 @@ const defaultFilters = {
 
 export default function Explore() {
   const { isLoading, user } = useRequireAuth();
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
   const [activeMainTab, setActiveMainTab] = useState('projects');
   const [activeProjectTab, setActiveProjectTab] = useState('foryou');
   const [filters, setFilters] = useState(defaultFilters);
@@ -33,6 +34,28 @@ export default function Explore() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('tab') === 'talent') setActiveMainTab('talent');
+  }, []);
+
+  // Load projects from Supabase
+  useEffect(() => {
+    const loadProjects = async () => {
+      setProjectsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at, website');
+
+        if (error) throw error;
+        setProjects(data || []);
+      } catch (err) {
+        console.error('Explore: load projects error', err);
+        setProjects([]);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+
+    loadProjects();
   }, []);
 
   // Load public profiles and their skills from Supabase
@@ -111,6 +134,26 @@ export default function Explore() {
 
   const activeFilterCount = Object.entries(filters).filter(([, v]) => v !== 'Tümü').length;
 
+  const calculateMatchScore = (userSkills, userInterests, projectSkills = [], projectTags = []) => {
+    const uSkills = userSkills || [];
+    const uInterests = userInterests || [];
+    const pSkills = projectSkills || [];
+    const pTags = projectTags || [];
+
+    const skillOverlap = uSkills.filter(skill => 
+      pSkills.some(pSkill => pSkill.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(pSkill.toLowerCase()))
+    ).length;
+    
+    const interestOverlap = uInterests.filter(interest =>
+      pTags.some(tag => tag.toLowerCase().includes(interest.toLowerCase()) || interest.toLowerCase().includes(tag.toLowerCase()))
+    ).length;
+    
+    const maxScore = Math.max(uSkills.length, pSkills.length) + Math.max(uInterests.length, pTags.length) || 1;
+    const score = ((skillOverlap * 2 + interestOverlap * 1.5) / maxScore) * 100;
+    
+    return Math.min(Math.round(score + 60), 99); // Base score + calculated, max 99
+  };
+
   const filteredProjects = useMemo(() => {
     return projects
       .map(project => ({
@@ -118,14 +161,14 @@ export default function Explore() {
         matchScore: calculateMatchScore(
           currentUserProfile.skills,
           currentUserProfile.interests,
-          project.skills,
-          project.tags
+          project.skills || [],
+          project.tags || []
         )
       }))
       .filter(project => {
         const matchesCategory = filters.category === 'Tümü' || project.category === filters.category;
         const matchesStage = filters.stage === 'Tümü' || project.stage === filters.stage ||
-          project.stage?.toLowerCase().startsWith(filters.stage.toLowerCase());
+          project.stage?.toLowerCase().startsWith(filters.stage.toLowerCase?.());
         const matchesRole = filters.role === 'Tümü' ||
           project.seeking?.some(r => r.toLowerCase().includes(filters.role.toLowerCase()) ||
             filters.role.toLowerCase().includes(r.toLowerCase()));
