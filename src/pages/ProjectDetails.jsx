@@ -513,15 +513,17 @@ export default function ProjectDetails() {
               >
                 <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/30">
                   <CardContent className="p-6">
-                    <Button 
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-lg py-6"
-                      onClick={() => setIsApplicationModalOpen(true)}
-                      disabled={hasApplied}
-                    >
-                      <Send className="w-5 h-5 mr-2" />
-                      {hasApplied ? 'Başvuru Gönderildi' : 'Projeye Başvur'}
-                    </Button>
-                    
+                    {project.owner_id !== user?.id && (
+                      <Button
+                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-lg py-6"
+                        onClick={() => setIsApplicationModalOpen(true)}
+                        disabled={hasApplied}
+                      >
+                        <Send className="w-5 h-5 mr-2" />
+                        {hasApplied ? 'Başvuru Gönderildi' : 'Projeye Başvur'}
+                      </Button>
+                    )}
+
                     <div className="mt-4 pt-4 border-t border-emerald-500/20 space-y-3 text-sm">
                       <div className="flex items-center justify-between text-slate-300">
                         <span className="text-slate-400">Son Başvuru</span>
