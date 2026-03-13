@@ -43,7 +43,7 @@ export default function Explore() {
       try {
         const { data, error } = await supabase
           .from('projects')
-          .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at, website');
+          .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at');
 
         if (error) throw error;
         setProjects(data || []);
