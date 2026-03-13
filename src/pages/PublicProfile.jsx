@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useAuth } from '@/lib/AuthContext';
 import { motion } from 'framer-motion';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,9 @@ import { toast } from 'sonner';
 export default function PublicProfile() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const user = location.state?.user;
+  const profileUserId = user?.id;
   const context = location.state?.context;
   const applicationId = location.state?.applicationId;
   const projectId = location.state?.projectId;
@@ -143,31 +146,33 @@ export default function PublicProfile() {
                 </AvatarFallback>
               </Avatar>
 
-              {/* Action Buttons */}
-              <div className="absolute top-4 right-4 flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                  onClick={handleMessage}
-                >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  Mesaj Gönder
-                </Button>
-                <Button 
-                  size="sm" 
-                  style={connectionSent ? { backgroundColor: '#4B5563' } : {}}
-                  className={connectionSent 
-                    ? "text-slate-300 cursor-not-allowed" 
-                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
-                  }
-                  onClick={!connectionSent ? handleConnect : undefined}
-                  disabled={connectionSent}
-                >
-                  <UserPlus className="w-4 h-4 mr-1" />
-                  {connectionSent ? 'İstek Beklemede' : 'Bağlantı Kur'}
-                </Button>
-              </div>
+              {/* Action Buttons - only show when viewing someone else's profile */}
+              {profileUserId !== currentUser?.id && (
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    onClick={handleMessage}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    Mesaj Gönder
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    style={connectionSent ? { backgroundColor: '#4B5563' } : {}}
+                    className={connectionSent 
+                      ? "text-slate-300 cursor-not-allowed" 
+                      : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    }
+                    onClick={!connectionSent ? handleConnect : undefined}
+                    disabled={connectionSent}
+                  >
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    {connectionSent ? 'İstek Beklemede' : 'Bağlantı Kur'}
+                  </Button>
+                </div>
+              )}
 
               {/* Profile Info */}
               <div className="mt-4">
