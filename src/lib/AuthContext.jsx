@@ -105,15 +105,14 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
-
       await checkUserAuth();
-      setIsLoadingPublicSettings(false);
     } catch (error) {
       console.error('Unexpected error:', error);
       setAuthError({
         type: 'unknown',
         message: error.message || 'An unexpected error occurred'
       });
+    } finally {
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
     }
