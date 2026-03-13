@@ -10,11 +10,14 @@ import confetti from 'canvas-confetti';
 import StepBasics from '@/components/createProject/StepBasics';
 import StepDetails from '@/components/createProject/StepDetails';
 import StepTeam from '@/components/createProject/StepTeam';
-import { projects } from '@/components/mockData';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function CreateProject() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -33,15 +36,15 @@ export default function CreateProject() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: 
+      case 1:
         return formData.title !== '' && formData.category !== '' && formData.program !== '';
-      case 2: 
-        return formData.problem && formData.solution && formData.targetAudience && 
-               formData.productStatus && formData.currentFocus && formData.whatMakesYouDifferent &&
-               formData.whatLookingFor && formData.whatLookingFor.length > 0;
-      case 3: 
+      case 2:
+        return formData.problem && formData.solution && formData.targetAudience &&
+          formData.productStatus && formData.currentFocus && formData.whatMakesYouDifferent &&
+          formData.whatLookingFor && formData.whatLookingFor.length > 0;
+      case 3:
         return formData.roles.length > 0;
-      default: 
+      default:
         return false;
     }
   };
@@ -58,46 +61,56 @@ export default function CreateProject() {
     if (step > 1) setStep(step - 1);
   };
 
-  const handlePublish = () => {
-    // Create new project
-    const newProject = {
-      id: projects.length + 1,
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      program: formData.program,
-      university: formData.university || "Üniversite bilgisi",
-      verified: false,
-      seeking: formData.roles.map(r => r.role),
-      skills: formData.roles.flatMap(r => r.skills),
-      tags: formData.tags,
-      owner: {
-        name: formData.ownerName || "Proje sahibi",
-        avatar: "",
-        university: formData.university || ""
-      },
-      createdAt: new Date().toISOString().split('T')[0],
-      applicants: 0
-    };
+  const handlePublish = async () => {
+    if (!user) {
+      toast.error('Giriş yapman gerekiyor.');
+      return;
+    }
 
-    // Add to projects array (in real app, this would be API call)
-    projects.push(newProject);
+    setIsPublishing(true);
 
-    // Confetti animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    const description = [
+      formData.problem && `Problem: ${formData.problem}`,
+      formData.solution && `Çözüm: ${formData.solution}`,
+      formData.whatMakesYouDifferent && `Fark: ${formData.whatMakesYouDifferent}`,
+      formData.description && formData.description,
+    ].filter(Boolean).join('\n\n');
 
-    // Success toast
-    toast.success('Projen Yayında! 🚀', {
-      description: 'Ekip üyeleri aramaya başla!'
-    });
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({
+        owner_id: user.id,
+        title: formData.title,
+        description,
+        category: formData.category,
+        program: formData.program === 'Diğer' ? formData.programOther : formData.program,
+        location: null,
+        stage: formData.productStatus || null,
+        is_paid: false,
+        is_verified: false,
+        seeking: formData.roles.map(r => r.role),
+        skills: formData.roles.flatMap(r => r.skills),
+        tags: formData.tags,
+      })
+      .select()
+      .single();
 
-    // Redirect to project details
+    console.log('insert result:', data, error);
+    console.log('user id:', user?.id);
+
+    setIsPublishing(false);
+
+    if (error) {
+      console.error(error);
+      toast.error('Proje kaydedilemedi: ' + error.message);
+      return;
+    }
+
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    toast.success('Projen Yayında! 🚀', { description: 'Ekip üyeleri aramaya başla!' });
+
     setTimeout(() => {
-      navigate(createPageUrl('ProjectDetails'), { state: { projectId: newProject.id } });
+      navigate(createPageUrl('ProjectDetails'), { state: { projectId: data.id } });
     }, 1500);
   };
 
@@ -110,7 +123,6 @@ export default function CreateProject() {
   return (
     <div className="min-h-screen bg-slate-900 py-12">
       <div className="max-w-3xl mx-auto px-4">
-        {/* Header */}
         <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -124,7 +136,6 @@ export default function CreateProject() {
           <p className="text-slate-400">Hayalindeki ekibi bul, projeni gerçekleştir</p>
         </div>
 
-        {/* Progress */}
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-emerald-400 font-medium">{stepTitles[step]}</span>
@@ -133,7 +144,6 @@ export default function CreateProject() {
           <Progress value={progress} className="h-2 bg-slate-700" />
         </div>
 
-        {/* Form Content */}
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-8 min-h-[400px]">
           <AnimatePresence mode="wait">
             <motion.div
@@ -143,20 +153,13 @@ export default function CreateProject() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
             >
-              {step === 1 && (
-                <StepBasics data={formData} onChange={updateFormData} />
-              )}
-              {step === 2 && (
-                <StepDetails data={formData} onChange={updateFormData} />
-              )}
-              {step === 3 && (
-                <StepTeam data={formData} onChange={updateFormData} />
-              )}
+              {step === 1 && <StepBasics data={formData} onChange={updateFormData} />}
+              {step === 2 && <StepDetails data={formData} onChange={updateFormData} />}
+              {step === 3 && <StepTeam data={formData} onChange={updateFormData} />}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-6">
           <Button
             variant="ghost"
@@ -169,13 +172,13 @@ export default function CreateProject() {
           </Button>
           <Button
             onClick={handleNext}
-            disabled={!canProceed()}
+            disabled={!canProceed() || isPublishing}
             className="bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
           >
             {step === totalSteps ? (
               <>
                 <Check className="w-4 h-4 mr-2" />
-                Yayınla
+                {isPublishing ? 'Yayınlanıyor...' : 'Yayınla'}
               </>
             ) : (
               <>
