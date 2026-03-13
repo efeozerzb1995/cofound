@@ -43,11 +43,13 @@ import {
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 import confetti from 'canvas-confetti';
 
 export default function ProjectDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [project, setProject] = useState(null);
   const [owner, setOwner] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -489,14 +491,16 @@ export default function ProjectDetails() {
                         <p className="text-sm text-slate-400">{ownerDisplay.university}</p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
-                      onClick={handleMessageOwner}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Mesaj At
-                    </Button>
+                    {project.owner_id !== user?.id && (
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                        onClick={handleMessageOwner}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Mesaj At
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
