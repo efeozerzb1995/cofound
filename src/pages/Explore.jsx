@@ -36,7 +36,7 @@ export default function Explore() {
     if (params.get('tab') === 'talent') setActiveMainTab('talent');
   }, []);
 
-  // Load projects from Supabase
+  // Load projects from Supabase and enrich with owner profiles for profile links
   useEffect(() => {
     const loadProjects = async () => {
       setProjectsLoading(true);
@@ -46,7 +46,40 @@ export default function Explore() {
           .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at');
 
         if (error) throw error;
-        setProjects(data || []);
+        const rawProjects = data || [];
+        const ownerIds = [...new Set(rawProjects.map((p) => p.owner_id).filter(Boolean))];
+        let ownerMap = {};
+        if (ownerIds.length > 0) {
+          const { data: profilesData, error: profileError } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url')
+            .in('user_id', ownerIds);
+          if (!profileError && profilesData) {
+            ownerMap = profilesData.reduce((acc, p) => {
+              acc[p.user_id] = {
+                id: p.user_id,
+                name: p.full_name || 'Kullanıcı',
+                title: p.title || '',
+                university: p.university || '',
+                location: p.location || '',
+                avatar: p.avatar_url || '',
+                bio: p.about || '',
+                portfolio: [
+                  ...(p.github_url ? [{ type: 'github', url: p.github_url }] : []),
+                  ...(p.linkedin_url ? [{ type: 'linkedin', url: p.linkedin_url }] : []),
+                  ...(p.website_url ? [{ type: 'website', url: p.website_url }] : []),
+                ],
+              };
+              return acc;
+            }, {});
+          }
+        }
+        setProjects(
+          rawProjects.map((p) => ({
+            ...p,
+            owner: ownerMap[p.owner_id] || null,
+          }))
+        );
       } catch (err) {
         console.error('Explore: load projects error', err);
         setProjects([]);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Bookmark, ChevronDown, Link2, Plus, ArrowRight } from 'lucide-react';
 
@@ -56,9 +57,18 @@ export default function ProjectCard({ project, matchScore, showAIBadge }) {
 
   // Supabase ve mockData uyumlu alan isimleri
   const imageUrl = project.imageUrl || project.image_url || null;
-  const ownerName = project.owner?.name || null;
+  const owner = project.owner || null;
+  const ownerName = owner?.name || null;
+  const ownerId = owner?.id || null;
   const createdAt = project.createdAt || project.created_at;
   const updatedAt = project.updatedAt || project.updated_at;
+
+  const handleOwnerClick = (e) => {
+    e.stopPropagation();
+    if (ownerId && owner) {
+      navigate(createPageUrl('PublicProfile'), { state: { user: owner } });
+    }
+  };
 
   return (
     <motion.div
@@ -125,7 +135,23 @@ export default function ProjectCard({ project, matchScore, showAIBadge }) {
                   {createdAt ? 'Created' : 'Updated'}
                 </span>
                 <span className="text-slate-400 truncate block">
-                  {ownerName ? `${ownerName} | ` : ''}{formatDate(createdAt || updatedAt)}
+                  {ownerName && (
+                    <>
+                      {ownerId ? (
+                        <button
+                          type="button"
+                          onClick={handleOwnerClick}
+                          className="text-indigo-400 hover:text-indigo-300 hover:underline focus:outline-none focus:underline truncate inline"
+                        >
+                          {ownerName}
+                        </button>
+                      ) : (
+                        <span>{ownerName}</span>
+                      )}
+                      {' | '}
+                    </>
+                  )}
+                  {formatDate(createdAt || updatedAt)}
                 </span>
               </div>
 
