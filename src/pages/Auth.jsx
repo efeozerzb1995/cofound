@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Zap, Quote, Mail, Lock, Github, Apple } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
-import ChatOnboarding from '@/components/onboarding/ChatOnboarding';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -20,7 +19,6 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState('');
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const applySessionDecision = async (user) => {
@@ -41,8 +39,7 @@ export default function Auth() {
         }
 
         if (!profile) {
-          console.log('[Auth] No profile found → setting showOnboarding to true');
-          setShowOnboarding(true);
+          console.log('[Auth] No profile found → allowing navigation without chat onboarding');
         } else {
           console.log('[Auth] Profile exists → navigating to Explore');
           navigate(createPageUrl('Explore'));
@@ -75,15 +72,6 @@ export default function Auth() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // When context indicates onboarding is needed AND there is an active session, show modal
-  useEffect(() => {
-    if (needsOnboarding && isAuthenticated) {
-      setShowOnboarding(true);
-    } else {
-      setShowOnboarding(false);
-    }
-  }, [needsOnboarding, isAuthenticated]);
 
   const handleSocialLogin = async (provider) => {
     setLoadingProvider(provider);
@@ -163,121 +151,8 @@ export default function Auth() {
     }
   };
 
-  const handleOnboardingComplete = async (data) => {
-    try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error('[Auth] Onboarding getSession error:', sessionError);
-      }
-
-      const user = sessionData?.session?.user || null;
-      const userId = user?.id || null;
-
-      const profilePayload = {
-        user_id: userId,
-        full_name: data.name || user?.user_metadata?.full_name || null,
-        title: data.title || null,
-        university: data.university || null,
-        location: data.location || null,
-        about: data.bio || null,
-        motivation: data.motivation || null,
-        looking_for: data.lookingFor || null,
-        has_project_idea: !!data.hasProjectIdea,
-      };
-
-      console.log('[Auth] Onboarding profile upsert payload', {
-        userId,
-        payload: profilePayload,
-      });
-
-      if (userId) {
-        // Check if profile exists for this user
-        const { data: existingProfile, error: existingProfileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (existingProfileError) {
-          console.error('[Auth] Onboarding existing profile fetch error:', existingProfileError);
-        } else {
-          let profileError = null;
-          if (existingProfile) {
-            const { error } = await supabase
-              .from('profiles')
-              .update(profilePayload)
-              .eq('user_id', userId);
-            profileError = error;
-          } else {
-            const { error } = await supabase
-              .from('profiles')
-              .insert(profilePayload);
-            profileError = error;
-          }
-
-          if (profileError) {
-            console.error('[Auth] Onboarding profile save error:', profileError);
-          } else {
-            console.log('[Auth] Onboarding profile saved successfully');
-          }
-        }
-      } else {
-        console.warn('[Auth] Onboarding complete but no Supabase userId found. Profile not saved to Supabase.');
-      }
-
-      // Sync skills table from onboarding skills string
-      try {
-        const skills = Array.isArray(data.skills)
-          ? data.skills
-          : (data.skills || '')
-              .split(',')
-              .map(s => s.trim())
-              .filter(Boolean);
-
-        if (userId && skills.length > 0) {
-          // Clear existing skills for this user to avoid duplicates
-          const { error: deleteError } = await supabase
-            .from('skills')
-            .delete()
-            .eq('user_id', userId);
-          if (deleteError) {
-            console.error('[Auth] Onboarding skills delete error:', deleteError);
-          }
-
-          const rows = skills.map(name => ({ user_id: userId, name }));
-          const { error: insertError } = await supabase
-            .from('skills')
-            .insert(rows);
-          if (insertError) {
-            console.error('[Auth] Onboarding skills insert error:', insertError);
-          } else {
-            console.log('[Auth] Onboarding skills saved successfully');
-          }
-        }
-      } catch (skillsError) {
-        console.error('[Auth] Unexpected error while saving onboarding skills:', skillsError);
-      }
-
-      // Also keep localStorage for now
-      localStorage.setItem('userProfile', JSON.stringify(data));
-      localStorage.setItem('ekipbul_onboarding_complete', 'true');
-      toast.success('Profil oluşturuldu! Hoş geldin.');
-      setShowOnboarding(false);
-      markOnboardingComplete();
-      navigate(createPageUrl('Explore'));
-    } catch (error) {
-      console.error('[Auth] Unexpected error during onboarding complete:', error);
-      toast.error('Profil oluşturulurken bir hata oluştu.');
-    }
-  };
-
   return (
-    <>
-      <ChatOnboarding 
-        open={showOnboarding} 
-        onComplete={handleOnboardingComplete}
-      />
-      <div className="min-h-screen flex">
+    <div className="min-h-screen flex">
       {/* Left Side - Brand & Testimonial (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 relative overflow-hidden">
         {/* Background Pattern */}
@@ -531,8 +406,8 @@ export default function Auth() {
             © 2026 CoFound A.Ş.
           </div>
         </motion.div>
+        </div>
       </div>
     </div>
-    </>
   );
 }
