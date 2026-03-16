@@ -39,21 +39,28 @@ export default function Explore() {
   // Load projects from Supabase and enrich with owner profiles for profile links
   useEffect(() => {
     const loadProjects = async () => {
+      console.log('[Explore] loadProjects: start');
       setProjectsLoading(true);
       try {
         const { data, error } = await supabase
           .from('projects')
           .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at');
 
+        console.log('[Explore] loadProjects: result', { error, count: data?.length ?? 0 });
         if (error) throw error;
         const rawProjects = data || [];
         const ownerIds = [...new Set(rawProjects.map((p) => p.owner_id).filter(Boolean))];
         let ownerMap = {};
+        console.log('[Explore] loadProjects: unique ownerIds', ownerIds);
         if (ownerIds.length > 0) {
           const { data: profilesData, error: profileError } = await supabase
             .from('profiles')
             .select('user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url')
             .in('user_id', ownerIds);
+          console.log('[Explore] loadProjects: owner profiles result', {
+            profileError,
+            count: profilesData?.length ?? 0,
+          });
           if (!profileError && profilesData) {
             ownerMap = profilesData.reduce((acc, p) => {
               acc[p.user_id] = {
@@ -74,6 +81,13 @@ export default function Explore() {
             }, {});
           }
         }
+        const mapped = rawProjects.map((p) => ({
+          ...p,
+          owner: ownerMap[p.owner_id] || null,
+        }));
+        console.log('[Explore] loadProjects: final mapped projects', {
+          count: mapped.length,
+        });
         setProjects(
           rawProjects.map((p) => ({
             ...p,
@@ -84,6 +98,7 @@ export default function Explore() {
         console.error('Explore: load projects error', err);
         setProjects([]);
       } finally {
+        console.log('[Explore] loadProjects: finished');
         setProjectsLoading(false);
       }
     };
@@ -93,29 +108,44 @@ export default function Explore() {
 
   // Load public profiles and their skills from Supabase
   useEffect(() => {
+    if (!user) {
+      console.log('[Explore] loadUsers: skipped because no user');
+      return;
+    }
     const loadUsers = async () => {
+      console.log('[Explore] loadUsers: start for user', { userId: user.id });
       setUsersLoading(true);
       try {
         const { data: profilesData, error: profileError } = await supabase
           .from('profiles')
           .select('user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url');
 
+        console.log('[Explore] loadUsers: profiles result', {
+          profileError,
+          count: profilesData?.length ?? 0,
+        });
         if (profileError) throw profileError;
 
         const profiles = profilesData || [];
         if (profiles.length === 0) {
+          console.log('[Explore] loadUsers: no profiles found');
           setUsers([]);
           setUsersLoading(false);
           return;
         }
 
         const userIds = profiles.map((p) => p.user_id);
+        console.log('[Explore] loadUsers: userIds for skills', userIds);
         const { data: skillsData, error: skillsError } = await supabase
           .from('skills')
           .select('user_id, name')
           .in('user_id', userIds)
           .order('created_at', { ascending: true });
 
+        console.log('[Explore] loadUsers: skills result', {
+          skillsError,
+          count: skillsData?.length ?? 0,
+        });
         if (skillsError) throw skillsError;
 
         const skillsByUser = (skillsData || []).reduce((acc, row) => {
@@ -143,16 +173,20 @@ export default function Explore() {
             portfolio,
           };
         });
+        console.log('[Explore] loadUsers: final mapped users', {
+          count: mapped.length,
+        });
         setUsers(mapped);
       } catch (err) {
         console.error('Explore: load users error', err);
         setUsers([]);
       } finally {
+        console.log('[Explore] loadUsers: finished');
         setUsersLoading(false);
       }
     };
     loadUsers();
-  }, []);
+  }, [user]);
 
   // Close filter panel on outside click
   useEffect(() => {
