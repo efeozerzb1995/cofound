@@ -13,6 +13,11 @@ export function useRequireAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
 
+  // Log whenever loading state changes (helps debug prod hangs)
+  useEffect(() => {
+    console.log('[useRequireAuth] isLoading changed:', isLoading);
+  }, [isLoading]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -40,13 +45,26 @@ export function useRequireAuth() {
           setUser(null);
         }
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          console.log('[useRequireAuth] setIsLoading(false) after getSession');
+          setIsLoading(false);
+        }
       }
     };
 
     check();
     return () => { cancelled = true; };
   }, [navigate]);
+
+  // Fallback: if for any reason loading never flips, force it off after 3s
+  useEffect(() => {
+    if (!isLoading) return;
+    const timeout = setTimeout(() => {
+      console.warn('[useRequireAuth] Fallback timeout reached, forcing isLoading=false');
+      setIsLoading(false);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
 
   return { isLoading, user };
 }
