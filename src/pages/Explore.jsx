@@ -18,6 +18,28 @@ const defaultFilters = {
   role: 'Tümü',
 };
 
+const QUERY_TIMEOUT_MS = 5000;
+
+async function withTimeout(promise, label) {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      const err = new Error(`[Explore] ${label} timed out after ${QUERY_TIMEOUT_MS}ms`);
+      console.error(err);
+      reject(err);
+    }, QUERY_TIMEOUT_MS);
+  });
+
+  try {
+    const result = await Promise.race([promise, timeoutPromise]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+}
+
 export default function Explore() {
   const { isLoading, user } = useRequireAuth();
   const [projects, setProjects] = useState([]);
@@ -42,23 +64,36 @@ export default function Explore() {
       console.log('[Explore] loadProjects: start');
       setProjectsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at');
+        const { data, error } = await withTimeout(
+          supabase
+            .from('projects')
+            .select(
+              'id, owner_id, title, description, category, program, location, stage, is_paid, seeking, skills, tags, created_at, updated_at',
+            ),
+          'projects select',
+        );
 
-        console.log('[Explore] loadProjects: result', { error, count: data?.length ?? 0 });
+        console.log('[Explore] loadProjects: result', {
+          error: error || null,
+          count: data?.length ?? 0,
+        });
         if (error) throw error;
         const rawProjects = data || [];
         const ownerIds = [...new Set(rawProjects.map((p) => p.owner_id).filter(Boolean))];
         let ownerMap = {};
         console.log('[Explore] loadProjects: unique ownerIds', ownerIds);
         if (ownerIds.length > 0) {
-          const { data: profilesData, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url')
-            .in('user_id', ownerIds);
+          const { data: profilesData, error: profileError } = await withTimeout(
+            supabase
+              .from('profiles')
+              .select(
+                'user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url',
+              )
+              .in('user_id', ownerIds),
+            'owner profiles select',
+          );
           console.log('[Explore] loadProjects: owner profiles result', {
-            profileError,
+            profileError: profileError || null,
             count: profilesData?.length ?? 0,
           });
           if (!profileError && profilesData) {
@@ -116,12 +151,17 @@ export default function Explore() {
       console.log('[Explore] loadUsers: start for user', { userId: user.id });
       setUsersLoading(true);
       try {
-        const { data: profilesData, error: profileError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url');
+        const { data: profilesData, error: profileError } = await withTimeout(
+          supabase
+            .from('profiles')
+            .select(
+              'user_id, full_name, title, university, location, about, website_url, github_url, linkedin_url, avatar_url',
+            ),
+          'profiles select (talent)',
+        );
 
         console.log('[Explore] loadUsers: profiles result', {
-          profileError,
+          profileError: profileError || null,
           count: profilesData?.length ?? 0,
         });
         if (profileError) throw profileError;
@@ -136,14 +176,17 @@ export default function Explore() {
 
         const userIds = profiles.map((p) => p.user_id);
         console.log('[Explore] loadUsers: userIds for skills', userIds);
-        const { data: skillsData, error: skillsError } = await supabase
-          .from('skills')
-          .select('user_id, name')
-          .in('user_id', userIds)
-          .order('created_at', { ascending: true });
+        const { data: skillsData, error: skillsError } = await withTimeout(
+          supabase
+            .from('skills')
+            .select('user_id, name')
+            .in('user_id', userIds)
+            .order('created_at', { ascending: true }),
+          'skills select',
+        );
 
         console.log('[Explore] loadUsers: skills result', {
-          skillsError,
+          skillsError: skillsError || null,
           count: skillsData?.length ?? 0,
         });
         if (skillsError) throw skillsError;
