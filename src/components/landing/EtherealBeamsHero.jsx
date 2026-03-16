@@ -26,17 +26,71 @@ export default function EtherealBeamsHero() {
   }, []);
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-950">
-      {/* Gradient + beams background */}
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-slate-950">
+      {/* Background layers */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#22c55e1a,_transparent_60%),radial-gradient(circle_at_bottom,_#22c55e26,_transparent_55%)]" />
-        <div className="absolute -inset-x-40 -top-40 h-80 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-violet-500/10 blur-3xl" />
-        <div className="absolute inset-0 opacity-40 mix-blend-screen">
-          <div className="absolute inset-y-[-20%] left-1/4 w-px bg-gradient-to-b from-transparent via-emerald-400/40 to-transparent" />
-          <div className="absolute inset-y-[-30%] left-1/2 w-px bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent" />
-          <div className="absolute inset-y-[-25%] left-3/4 w-px bg-gradient-to-b from-transparent via-violet-400/40 to-transparent" />
+        {/* Large central radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.22)_0,_transparent_55%),radial-gradient(circle_at_top,_rgba(34,211,238,0.2)_0,_transparent_60%)]" />
+
+        {/* Moving gradient beams */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.8 }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+          className="absolute -inset-x-40 -top-64 h-[420px] bg-gradient-to-r from-emerald-500/15 via-cyan-500/15 to-violet-500/15 blur-3xl"
+        />
+        <div className="absolute inset-0 opacity-60 mix-blend-screen">
+          <motion.div
+            className="absolute inset-y-[-30%] left-1/4 w-px bg-gradient-to-b from-transparent via-emerald-400/70 to-transparent"
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: [-40, 40], opacity: 1 }}
+            transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute inset-y-[-35%] left-1/2 w-[2px] bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: [30, -30], opacity: 1 }}
+            transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut', delay: 0.6 }}
+          />
+          <motion.div
+            className="absolute inset-y-[-25%] left-3/4 w-[1.5px] bg-gradient-to-b from-transparent via-violet-400/70 to-transparent"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: [-20, 20], opacity: 1 }}
+            transition={{ duration: 4.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut', delay: 0.3 }}
+          />
         </div>
+
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 opacity-[0.18] mix-blend-soft-light">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(148,163,184,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.18)_1px,transparent_1px)] bg-[size:80px_80px]" />
+        </div>
+
+        {/* Dark vignette */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_transparent_30%,_#020617)]" />
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {Array.from({ length: 32 }).map((_, i) => (
+            <motion.span
+              // eslint-disable-next-line react/no-array-index-key
+              key={i}
+              className="absolute h-1 w-1 rounded-full bg-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+              initial={{ opacity: 0, scale: 0.3, y: 10 }}
+              animate={{ opacity: [0, 1, 0], scale: [0.4, 1, 0.4], y: [-10, 10, -10] }}
+              transition={{
+                duration: 6 + Math.random() * 4,
+                repeat: Infinity,
+                repeatType: 'mirror',
+                delay: Math.random() * 4,
+                ease: 'easeInOut',
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -44,7 +98,7 @@ export default function EtherealBeamsHero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs sm:text-sm text-slate-200 mb-5 backdrop-blur-md"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs sm:text-sm text-slate-200 mb-6 backdrop-blur-md shadow-[0_0_30px_rgba(45,212,191,0.35)]"
         >
           <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-medium">
@@ -53,16 +107,19 @@ export default function EtherealBeamsHero() {
         </motion.div>
 
         <motion.h1
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-tight mb-5"
+          className="mb-7"
         >
-          <span className="block font-extrabold tracking-tight">
-            Doğru Kurucu Ortağını Bul
+          <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-extrabold tracking-tight">
+            <span className="bg-gradient-to-r from-emerald-300 via-cyan-200 to-white bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(45,212,191,0.35)]">
+              Doğru Kurucu Ortağını Bul
+            </span>
           </span>
-          <span className="mt-3 block text-lg sm:text-xl md:text-2xl font-normal text-slate-300">
-            CoFound ile hayalindeki startup ekibini oluştur.
+          <span className="mt-4 block text-base sm:text-lg md:text-xl lg:text-2xl font-normal text-slate-200/90 max-w-2xl mx-auto">
+            CoFound ile hayalindeki startup ekibini oluştur. Teknik ve iş tarafında seni
+            tamamlayacak kurucu ortaklarla tanış.
           </span>
         </motion.h1>
 
