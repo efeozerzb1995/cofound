@@ -65,6 +65,43 @@ export default function EtherealBeamsHero() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(148,163,184,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.18)_1px,transparent_1px)] bg-[size:80px_80px]" />
         </div>
 
+        {/* Slow floating gradient blobs */}
+        <motion.div
+          className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl"
+          initial={{ opacity: 0.1, x: -20, y: 0 }}
+          animate={{ opacity: 0.15, x: [-20, 20, -20], y: [0, 10, 0] }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: 'mirror',
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className="absolute right-[-120px] top-40 h-96 w-96 rounded-full bg-cyan-500/15 blur-3xl"
+          initial={{ opacity: 0.08, x: 10, y: 0 }}
+          animate={{ opacity: 0.14, x: [10, -10, 10], y: [0, -15, 0] }}
+          transition={{
+            duration: 22,
+            repeat: Infinity,
+            repeatType: 'mirror',
+            ease: 'easeInOut',
+            delay: 2,
+          }}
+        />
+        <motion.div
+          className="absolute left-1/2 bottom-[-160px] h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/12 blur-3xl"
+          initial={{ opacity: 0.08, y: 10 }}
+          animate={{ opacity: 0.13, y: [10, -10, 10] }}
+          transition={{
+            duration: 24,
+            repeat: Infinity,
+            repeatType: 'mirror',
+            ease: 'easeInOut',
+            delay: 1,
+          }}
+        />
+
         {/* Dark vignette */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_transparent_30%,_#020617)]" />
 
