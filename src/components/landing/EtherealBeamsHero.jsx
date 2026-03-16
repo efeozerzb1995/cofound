@@ -47,12 +47,6 @@ export default function EtherealBeamsHero() {
             transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute inset-y-[-35%] left-1/2 w-[2px] bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
-            initial={{ y: -30, opacity: 0 }}
-            animate={{ y: [30, -30], opacity: 1 }}
-            transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut', delay: 0.6 }}
-          />
-          <motion.div
             className="absolute inset-y-[-25%] left-3/4 w-[1.5px] bg-gradient-to-b from-transparent via-violet-400/70 to-transparent"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: [-20, 20], opacity: 1 }}
