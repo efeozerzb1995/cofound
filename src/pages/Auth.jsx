@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Zap, Quote, Mail, Lock, Github, Apple } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
-import ChatOnboarding from '@/components/onboarding/ChatOnboarding';
+import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -226,7 +226,7 @@ export default function Auth() {
 
   return (
     <>
-      <ChatOnboarding open={showOnboarding} onComplete={handleOnboardingComplete} />
+      <OnboardingWizard open={showOnboarding} onComplete={handleOnboardingComplete} />
       <div className="min-h-screen flex">
         {/* Left Side - Brand & Testimonial (Hidden on mobile) */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 relative overflow-hidden">
