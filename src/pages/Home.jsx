@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import HeroSection from '@/components/landing/HeroSection';
+import EtherealBeamsHero from '@/components/landing/EtherealBeamsHero';
 import FeatureCards from '@/components/landing/FeatureCards';
 import TrendingProjects from '@/components/landing/TrendingProjects';
 import HowItWorks from '@/components/landing/HowItWorks';
@@ -21,7 +21,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <HeroSection />
+      <EtherealBeamsHero />
       <FeatureCards />
       <TrendingProjects />
       <HowItWorks />
