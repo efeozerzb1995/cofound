@@ -39,20 +39,7 @@ export default function EtherealBeamsHero() {
           transition={{ duration: 1.2, ease: 'easeOut' }}
           className="absolute -inset-x-40 -top-64 h-[420px] bg-gradient-to-r from-emerald-500/15 via-cyan-500/15 to-violet-500/15 blur-3xl"
         />
-        <div className="absolute inset-0 opacity-60 mix-blend-screen">
-          <motion.div
-            className="absolute inset-y-[-30%] left-1/4 w-px bg-gradient-to-b from-transparent via-emerald-400/70 to-transparent"
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: [-40, 40], opacity: 1 }}
-            transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute inset-y-[-25%] left-3/4 w-[1.5px] bg-gradient-to-b from-transparent via-violet-400/70 to-transparent"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: [-20, 20], opacity: 1 }}
-            transition={{ duration: 4.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut', delay: 0.3 }}
-          />
-        </div>
+        <div className="absolute inset-0 opacity-60 mix-blend-screen" />
 
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.18] mix-blend-soft-light">
