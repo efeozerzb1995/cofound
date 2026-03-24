@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, X, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import ComboInput from './ComboInput';
 import ProductStageDialog from './ProductStageDialog';
 import CurrentFocusDialog from './CurrentFocusDialog';

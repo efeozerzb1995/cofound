@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   Menu, 
-  X, 
   Compass, 
   Heart, 
   User, 

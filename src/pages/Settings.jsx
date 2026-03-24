@@ -13,7 +13,6 @@ import {
   Shield, 
   HelpCircle,
   Trash2,
-  LogOut,
   Camera,
   Link as LinkIcon,
   Plus,

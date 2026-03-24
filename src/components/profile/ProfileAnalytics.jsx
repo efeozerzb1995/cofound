@@ -2,8 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Eye, Search, FileDown, TrendingUp, ArrowRight } from 'lucide-react';
+import { Eye, Search, FileDown } from 'lucide-react';
 
 const mockVisitors = [
   {

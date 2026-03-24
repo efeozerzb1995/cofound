@@ -58,18 +58,7 @@ export default function EtherealBeamsHero() {
             ease: 'easeInOut',
           }}
         />
-        <motion.div
-          className="absolute right-[-120px] top-40 h-96 w-96 rounded-full bg-cyan-500/15 blur-3xl"
-          initial={{ opacity: 0.08, x: 10, y: 0 }}
-          animate={{ opacity: 0.14, x: [10, -10, 10], y: [0, -15, 0] }}
-          transition={{
-            duration: 22,
-            repeat: Infinity,
-            repeatType: 'mirror',
-            ease: 'easeInOut',
-            delay: 2,
-          }}
-        />
+        {/* Right-side blob removed to avoid vertical line edge */}
         <motion.div
           className="absolute left-1/2 bottom-[-160px] h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/12 blur-3xl"
           initial={{ opacity: 0.08, y: 10 }}

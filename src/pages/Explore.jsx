@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, SlidersHorizontal, Briefcase, Users, Mic, ArrowRight, X } from 'lucide-react';
+import { SlidersHorizontal, Briefcase, Users, Mic, ArrowRight, X } from 'lucide-react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import ProjectCard from '@/components/ui/ProjectCard';
 import UserCard from '@/components/ui/UserCard';

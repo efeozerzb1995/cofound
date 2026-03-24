@@ -6,7 +6,6 @@ import {
   Sparkles,
   Heart,
   Clock,
-  UserSearch
 } from 'lucide-react';
 
 export default function Matches() {

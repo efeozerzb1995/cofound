@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Search, X, Check } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 const interestOptions = [
   // Bio & Health

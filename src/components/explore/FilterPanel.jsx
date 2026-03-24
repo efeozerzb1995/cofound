@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { categories, stages, programs } from '@/components/mockData';
+import { categories } from '@/components/mockData';
 
 const roleOptions = [
   'Tümü',

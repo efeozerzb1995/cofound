@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
-  GraduationCap,
   Github,
   Linkedin,
   Globe,
@@ -15,10 +14,6 @@ import {
   Briefcase,
   Settings as SettingsIcon,
   BookOpen,
-  Download,
-  MessageCircle,
-  TrendingUp,
-  Eye,
   Zap,
   Search,
   Pencil,
